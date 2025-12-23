@@ -61,16 +61,6 @@ CREATE TABLE reservations (
     FOREIGN KEY (idutilisateur) REFERENCES utilisateurs(id)
 );
 
-CREATE TABLE commentaires (
-    id INT AUTO_INCREMENT PRIMARY KEY, 
-    idvisite INT, 
-    idutilisateur INT,
-    note INT CHECK (note >= 1 AND note <= 5), 
-    texte TEXT NOT NULL,
-    date_commentaire DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (idvisite) REFERENCES Visitesguidees(id),
-    FOREIGN KEY (idutilisateur) REFERENCES utilisateurs(id)
-);
 INSERT INTO utilisateurs (nom, email, rôle, motpasse_hash) 
 VALUES 
 ('Super Admin', 'superadmin@zoo.com', 'admin', 'bcrypt_hash_here');
