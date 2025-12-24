@@ -1,21 +1,19 @@
 <?php
 require_once 'classes/Database.php';
 
+class Utilisateur extends Database {
 
-
-class Utilisateur {
-    
-    
     private $id;
     private $nom;
     private $email;
     private $role;
     private $motPasseHash;
-    private $etat; 
+    private $etat;
     private $approuve;
-     public $pdo;
 
     public function __construct($nom, $email, $role, $motPasse, $etat, $approuve) {
+        parent::__construct(); 
+
         $this->nom = $nom;
         $this->email = $email;
         $this->role = $role;
@@ -39,6 +37,10 @@ class Utilisateur {
 
     public function getRole() {
         return $this->role;
+    }
+
+    public function getMotPasseHash() {
+        return $this->motPasseHash;
     }
 
     public function getEtat() {
@@ -74,34 +76,32 @@ class Utilisateur {
         $this->approuve = $approuve;
     }
 
-
     
     public function creer() {
-        $sql = "INSERT INTO utilisateur (nom, email, rôle, mot_de_passe,etat, approuve)
-                VALUES (:nom, :email, :rôle, :mot_de_passe,:etat,:approuve)";
+        $sql = "INSERT INTO utilisateur
+                (nom, email, role, mot_de_passe, etat, approuve)
+                VALUES (:nom, :email, :role, :mot_de_passe, :etat, :approuve)";
 
         $stmt = $this->pdo->prepare($sql);
-
-        $hash = password_hash($this->motPasseHash, PASSWORD_DEFAULT);
 
         return $stmt->execute([
             ':nom' => $this->nom,
             ':email' => $this->email,
-            ':mot_de_passe' => $hash
+            ':role' => $this->role,
+            ':mot_de_passe' => $this->motPasseHash,
+            ':etat' => $this->etat,
+            ':approuve' => $this->approuve
         ]);
     }
 
-  
     public function trouverParEmail($email) {
         $sql = "SELECT * FROM utilisateur WHERE email = :email";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':email' => $email]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
-
     }
 
-   
     public function verifierMotDePasse($motDePasseSaisi, $hashStocke) {
         return password_verify($motDePasseSaisi, $hashStocke);
     }

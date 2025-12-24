@@ -1,10 +1,12 @@
 <?php
 class Database {
+
     private $host;
     private $dbname;
     private $username;
     private $password;
-    private $pdo;
+
+    protected $pdo;
 
     public function __construct(
         $host = "localhost",
