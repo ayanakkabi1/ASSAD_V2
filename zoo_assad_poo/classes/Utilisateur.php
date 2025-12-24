@@ -77,8 +77,8 @@ class Utilisateur {
 
     
     public function creer() {
-        $sql = "INSERT INTO utilisateur (nom, email, mot_de_passe)
-                VALUES (:nom, :email, :mot_de_passe)";
+        $sql = "INSERT INTO utilisateur (nom, email, rôle, mot_de_passe,etat, approuve)
+                VALUES (:nom, :email, :rôle, :mot_de_passe,:etat,:approuve)";
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -98,6 +98,7 @@ class Utilisateur {
         $stmt->execute([':email' => $email]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+
     }
 
    

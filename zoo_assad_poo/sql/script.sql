@@ -64,3 +64,6 @@ CREATE TABLE reservations (
 INSERT INTO utilisateurs (nom, email, rôle, motpasse_hash) 
 VALUES 
 ('Super Admin', 'superadmin@zoo.com', 'admin', 'bcrypt_hash_here');
+ALTER TABLE utilisateurs
+ADD COLUMN etat BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN approuve BOOLEAN NOT NULL DEFAULT FALSE;
