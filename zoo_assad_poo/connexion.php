@@ -1,3 +1,83 @@
+<?php
+session_start();
+
+require_once 'classes/Database.php';
+require_once 'classes/Utilisateur.php';
+
+$erreur = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $email = trim($_POST['email'] ?? '');
+    $motPasse = $_POST['mot_passe'] ?? '';
+
+    if ($email === '' || $motPasse === '') {
+        $erreur = "Tous les champs sont obligatoires.";
+    } else {
+
+        // ⚠️ Constructeur obligatoire → valeurs temporaires
+        $utilisateurObj = new Utilisateur(
+            '',     // nom
+            '',     // email
+            '',     // role
+            '',     // mot de passe
+            '',     // etat
+            ''      // approuve
+        );
+
+        // 🔹 Récupération utilisateur
+        $utilisateur = $utilisateurObj->trouverParEmail($email);
+
+        if ($utilisateur) {
+
+            // 🔹 Vérification mot de passe
+            if ($utilisateurObj->verifierMotDePasse(
+                $motPasse,
+                $utilisateur['mot_de_passe']
+            )) {
+
+                // 🔹 Vérifier utilisateur actif
+                if ($utilisateur['etat'] !== 'actif') {
+                    $erreur = "Votre compte est désactivé.";
+                } else {
+
+                    // 🔹 Guide non approuvé
+                    if (
+                        $utilisateur['role'] === 'guide'
+                        && $utilisateur['approuve'] !== 'oui'
+                    ) {
+                        header("Location: guide_non_approuve.php");
+                        exit;
+                    }
+
+                    // 🔹 Session
+                    $_SESSION['user_id'] = $utilisateur['id'];
+                    $_SESSION['user_nom'] = $utilisateur['nom'];
+                    $_SESSION['user_role'] = $utilisateur['role'];
+
+                    // 🔹 Redirection selon rôle
+                    if ($utilisateur['role'] === 'admin') {
+                        header("Location: dashboard_admin.php");
+                    } elseif ($utilisateur['role'] === 'guide') {
+                        header("Location: dashboard_guide.php");
+                    } else {
+                        header("Location: dashboard_visiteur.php");
+                    }
+                    exit;
+                }
+
+            } else {
+                $erreur = "Mot de passe incorrect.";
+            }
+
+        } else {
+            $erreur = "Email introuvable.";
+        }
+    }
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -12,10 +92,10 @@
     <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
 
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-            Connexion
+            Connexionc
         </h2>
 
-        <form action="traitement_connexion.php" method="POST" class="space-y-5">
+        <form action="connexion.php" method="POST" class="space-y-5">
 
             <!-- Email -->
             <div>
@@ -26,7 +106,6 @@
                     type="email"
                     name="email"
                     id="email"
-                    required
                     placeholder="exemple@email.com"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
@@ -41,7 +120,7 @@
                     type="password"
                     name="mot_passe"
                     id="mot_passe"
-                    required
+                    
                     placeholder="Votre mot de passe"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
