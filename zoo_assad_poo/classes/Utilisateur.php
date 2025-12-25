@@ -95,7 +95,7 @@ class Utilisateur extends Database {
     }
 
     public function trouverParEmail($email) {
-        $sql = "SELECT * FROM utilisateur WHERE email = :email";
+        $sql = "SELECT * FROM utilisateurs WHERE email = :email";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
