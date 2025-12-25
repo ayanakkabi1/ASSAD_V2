@@ -68,8 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Connexion
         </h2>
        
+        <?php if (!empty($erreur)): ?>
+    <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+        <?= htmlspecialchars($erreur) ?>
+    </div>
+<?php endif; ?>
 
-        <form action="connexion.php" method="POST" class="space-y-5">
+        <form action="" method="POST" class="space-y-5">
 
             <!-- Email -->
             <div>
