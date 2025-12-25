@@ -15,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erreur = "Tous les champs sont obligatoires.";
     } else {
 
-        // ⚠️ Constructeur obligatoire → valeurs temporaires
         $utilisateurObj = new Utilisateur(
             '',     // nom
             '',     // email

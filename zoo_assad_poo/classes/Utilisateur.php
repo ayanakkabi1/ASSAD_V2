@@ -1,5 +1,5 @@
 <?php
-require_once 'classes/Database.php';
+require_once 'Database.php';
 
 class Utilisateur extends Database {
 
@@ -78,8 +78,8 @@ class Utilisateur extends Database {
 
     
     public function creer() {
-        $sql = "INSERT INTO utilisateur
-                (nom, email, role, mot_de_passe, etat, approuve)
+        $sql = "INSERT INTO utilisateurs
+                (nom, email, role, motpasse_hash, etat, approuve)
                 VALUES (:nom, :email, :role, :mot_de_passe, :etat, :approuve)";
 
         $stmt = $this->pdo->prepare($sql);
@@ -98,9 +98,23 @@ class Utilisateur extends Database {
         $sql = "SELECT * FROM utilisateur WHERE email = :email";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':email' => $email]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$data) {
+        return null;
     }
+
+    return new Utilisateur(
+        $data['nom'],
+        $data['email'],
+        $data['role'],
+        null, 
+        $data['etat'],
+        $data['approuve']
+    );
+}
+
+       
 
     public function verifierMotDePasse($motDePasseSaisi, $hashStocke) {
         return password_verify($motDePasseSaisi, $hashStocke);
