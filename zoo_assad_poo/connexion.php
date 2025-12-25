@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-require_once 'classes/Database.php';
 require_once 'classes/Utilisateur.php';
 
 $erreur = "";
@@ -15,62 +14,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erreur = "Tous les champs sont obligatoires.";
     } else {
 
-        $utilisateurObj = new Utilisateur(
-            '',     // nom
-            '',     // email
-            '',     // role
-            '',     // mot de passe
-            '',     // etat
-            ''      // approuve
-        );
+        $utilisateurRepo = new Utilisateur('', '', '', '', '', '');
 
-        // 🔹 Récupération utilisateur
-        $utilisateur = $utilisateurObj->trouverParEmail($email);
+        $utilisateur = $utilisateurRepo->trouverParEmail($email);
 
-        if ($utilisateur) {
+        if (!$utilisateur) {
+            $erreur = "Email introuvable.";
+        }
+        elseif (!$utilisateur->verifierMotDePasse($motPasse,$hashStocke)) {
+            $erreur = "Mot de passe incorrect.";
+        }
+        elseif ($utilisateur->getApprouve() !== 'approuvé') {
+            $erreur = "Votre compte n'est pas encore approuvé.";
+        }
+        else {
 
-            // 🔹 Vérification mot de passe
-            if ($utilisateurObj->verifierMotDePasse(
-                $motPasse,
-                $utilisateur['mot_de_passe']
-            )) {
+            
+            $_SESSION['user'] = [
+                'email' => $utilisateur->getEmail(),
+                'role'  => $utilisateur->getRole()
+            ];
 
-                // 🔹 Vérifier utilisateur actif
-                if ($utilisateur['etat'] !== 'actif') {
-                    $erreur = "Votre compte est désactivé.";
-                } else {
-
-                    // 🔹 Guide non approuvé
-                    if (
-                        $utilisateur['role'] === 'guide'
-                        && $utilisateur['approuve'] !== 'oui'
-                    ) {
-                        header("Location: guide_non_approuve.php");
-                        exit;
-                    }
-
-                    // 🔹 Session
-                    $_SESSION['user_id'] = $utilisateur['id'];
-                    $_SESSION['user_nom'] = $utilisateur['nom'];
-                    $_SESSION['user_role'] = $utilisateur['role'];
-
-                    // 🔹 Redirection selon rôle
-                    if ($utilisateur['role'] === 'admin') {
-                        header("Location: dashboard_admin.php");
-                    } elseif ($utilisateur['role'] === 'guide') {
-                        header("Location: dashboard_guide.php");
-                    } else {
-                        header("Location: dashboard_visiteur.php");
-                    }
-                    exit;
-                }
-
+           
+            if ($utilisateur->getRole() === 'admin') {
+                header('Location: dashboard_admin.php');
+            } elseif ($utilisateur->getRole() === 'guide') {
+                header('Location: dashboard_guide.php');
             } else {
-                $erreur = "Mot de passe incorrect.";
+                header('Location: dashboard_visiteur.php');
             }
 
-        } else {
-            $erreur = "Email introuvable.";
+            exit;
         }
     }
 }
@@ -91,8 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
 
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-            Connexionc
+            Connexion
         </h2>
+       
 
         <form action="connexion.php" method="POST" class="space-y-5">
 
