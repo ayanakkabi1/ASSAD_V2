@@ -2,135 +2,113 @@
 require_once 'classes/Utilisateur.php';
 
 $erreurs = [];
-$nom = $email = $role = '';
+$success = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $nom = trim($_POST['nom'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     $role = $_POST['role'] ?? '';
 
-   
-
-    if (empty($nom)) {
-        $erreurs['nom'] = "Le nom est obligatoire.";
-    }
-
-    if (empty($email)) {
-        $erreurs['email'] = "L’email est obligatoire.";
-    }
-
-    if (empty($password)) {
-        $erreurs['password'] = "Le mot de passe est obligatoire.";
-    }
-
-    if (empty($confirm_password)) {
-        $erreurs['confirm_password'] = "Veuillez confirmer le mot de passe.";
-    }
-
-   
-    if (!empty($email) && !preg_match('/^[^\s@]+@[^\s@]+\.[^\s@]+$/', $email)) {
-        $erreurs['email'] = "Format de l’email invalide.";
-    }
-
-  
-    if (!empty($password) && !preg_match('/^(?=.*[A-Za-z])(?=.*\d).{8,}$/', $password)) {
-        $erreurs['password'] = "Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.";
-    }
-
+    // Validations [cite: 59, 60, 61, 62]
+    if (empty($nom)) $erreurs['nom'] = "Le nom est requis.";
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $erreurs['email'] = "Email invalide.";
     
-    if ($password !== $confirm_password) {
-        $erreurs['confirm_password'] = "Les mots de passe ne correspondent pas.";
+    $password_regex = "/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/";
+    if (!preg_match($password_regex, $password)) {
+        $erreurs['password'] = "Minimum 8 caractères, une lettre et un chiffre.";
     }
+    if ($password !== $confirm_password) $erreurs['confirm_password'] = "Les mots de passe diffèrent.";
+    if (empty($role)) $erreurs['role'] = "Sélectionnez un rôle.";
 
     if (empty($erreurs)) {
+        $hash = password_hash($password, PASSWORD_BCRYPT); // [cite: 63]
+        $approuve = ($role === 'guide') ? 'non approuvé' : 'approuvé'; // [cite: 64]
 
-        
-        $motPasseHash = password_hash($password, PASSWORD_DEFAULT);
-
-      
-        $approuve = ($role === 'guide') ? 'non approuvé' : 'approuvé';
-
-        
-        $utilisateur = new Utilisateur(
-            $nom,
-            $email,
-            $role,
-            $motPasseHash,
-            'actif',
-            $approuve
-        );
-
-        
-        $utilisateur->creer();
-
-        // Redirection
-        header('Location: login.php');
-        exit;
+        $user = new Utilisateur($nom, $email, $role, $hash, 'actif', $approuve);
+        if ($user->creer()) { // [cite: 68]
+            $success = "Compte créé avec succès !";
+        } else {
+            $erreurs['general'] = "Erreur lors de l'enregistrement.";
+        }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Inscription</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Zoo ASSAD</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center text-green-700 mb-6">Rejoindre le Zoo ASSAD</h1>
 
-<div class="bg-white p-8 rounded-xl max-w-md w-full shadow-lg">
-
-    <h2 class="text-2xl font-bold text-center mb-6">Inscription</h2>
-
-    <form method="post">
-
-        <!-- Nom -->
-        <label>Nom</label>
-        <input type="text" name="nom" class="w-full border p-3 mb-1"
-               value="<?= htmlspecialchars($nom) ?>">
-        <?php if (isset($erreurs['nom'])): ?>
-            <p class="text-red-500 text-sm mb-3"><?= $erreurs['nom'] ?></p>
+        <?php if ($success): ?>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <?php echo $success; ?>
+            </div>
         <?php endif; ?>
 
-        <!-- Email -->
-        <label>Email</label>
-        <input type="text" name="email" class="w-full border p-3 mb-1"
-               value="<?= htmlspecialchars($email) ?>">
-        <?php if (isset($erreurs['email'])): ?>
-            <p class="text-red-500 text-sm mb-3"><?= $erreurs['email'] ?></p>
-        <?php endif; ?>
+        <form method="POST" action="" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nom complet</label>
+                <input type="text" name="nom" value="<?= htmlspecialchars($nom ?? '') ?>" 
+                       class="mt-1 block w-full px-3 py-2 border <?= isset($erreurs['nom']) ? 'border-red-500' : 'border-gray-300' ?> rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                <?php if (isset($erreurs['nom'])): ?>
+                    <p class="text-red-500 text-xs mt-1"><?= $erreurs['nom'] ?></p> <?php endif; ?>
+            </div>
 
-        <!-- Mot de passe -->
-        <label>Mot de passe</label>
-        <input type="password" name="password" class="w-full border p-3 mb-1">
-        <?php if (isset($erreurs['password'])): ?>
-            <p class="text-red-500 text-sm mb-3"><?= $erreurs['password'] ?></p>
-        <?php endif; ?>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" name="email" value="<?= htmlspecialchars($email ?? '') ?>" 
+                       class="mt-1 block w-full px-3 py-2 border <?= isset($erreurs['email']) ? 'border-red-500' : 'border-gray-300' ?> rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                <?php if (isset($erreurs['email'])): ?>
+                    <p class="text-red-500 text-xs mt-1"><?= $erreurs['email'] ?></p> <?php endif; ?>
+            </div>
 
-        <!-- Confirmation -->
-        <label>Confirmer le mot de passe</label>
-        <input type="password" name="confirm_password" class="w-full border p-3 mb-1">
-        <?php if (isset($erreurs['confirm_password'])): ?>
-            <p class="text-red-500 text-sm mb-3"><?= $erreurs['confirm_password'] ?></p>
-        <?php endif; ?>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                    <input type="password" name="password" 
+                           class="mt-1 block w-full px-3 py-2 border <?= isset($erreurs['password']) ? 'border-red-500' : 'border-gray-300' ?> rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Confirmation</label>
+                    <input type="password" name="confirm_password" 
+                           class="mt-1 block w-full px-3 py-2 border <?= isset($erreurs['confirm_password']) ? 'border-red-500' : 'border-gray-300' ?> rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+            </div>
+            <?php if (isset($erreurs['password'])): ?>
+                <p class="text-red-500 text-xs mt-1"><?= $erreurs['password'] ?></p>
+            <?php endif; ?>
 
-        <!-- Rôle -->
-        <label>Rôle</label>
-        <select name="role" class="w-full border p-3 mb-6">
-            <option value="visiteur" <?= $role === 'visiteur' ? 'selected' : '' ?>>Visiteur</option>
-            <option value="guide" <?= $role === 'guide' ? 'selected' : '' ?>>Guide</option>
-        </select>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Vous êtes ?</label>
+                <select name="role" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                    <option value="">Sélectionnez un rôle</option>
+                    <option value="visiteur">Visiteur</option>
+                    <option value="guide">Guide</option>
+                </select>
+                <?php if (isset($erreurs['role'])): ?>
+                    <p class="text-red-500 text-xs mt-1"><?= $erreurs['role'] ?></p>
+                <?php endif; ?>
+            </div>
 
-        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg">
-            S'inscrire
-        </button>
+            <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200 font-semibold shadow-md">
+                Créer mon compte
+            </button>
+        </form>
 
-    </form>
-</div>
+        <p class="text-center text-sm text-gray-600 mt-6">
+            Déjà inscrit ? <a href="connexion.php" class="text-green-600 hover:underline">Se connecter</a>
+        </p>
+    </div>
 
 </body>
 </html>

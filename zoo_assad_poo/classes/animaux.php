@@ -1,16 +1,23 @@
 <?php
-require_once 'classes/Database.php';
-require_once 'classes/Animal.php';
+require_once 'Database.php';
+require_once 'Animal.php';
+require_once 'Utilisateur.php';
 
 $repo = new Animal($pdo);
 
 $habitat = $_POST['habitat'] ?? null;
-
+function supprimer($id){
+    $db = new Database();
+    $stmt = $db->getConnection()->prepare("DELETE FROM animaux WHERE id=?");
+    $stmt->execute([$id]);
+}
 if ($habitat) {
     $animaux = $repo->listerParHabitat((int)$habitat);
 } else {
     $animaux = $repo->listerTous();
 }
+
+
 ?>
 
 <h2>Liste des animaux</h2>
@@ -33,3 +40,5 @@ if ($habitat) {
     </li>
 <?php endforeach; ?>
 </ul>
+
+

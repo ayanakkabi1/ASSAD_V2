@@ -1,120 +1,73 @@
 <?php
 session_start();
-
 require_once 'classes/Utilisateur.php';
-
 
 $erreur = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $email = trim($_POST['email'] ?? '');
-    $motPasse = $_POST['mot_passe'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    if ($email === '' || $motPasse === '') {
-        $erreur = "Tous les champs sont obligatoires.";
-    } else {
+    $userData = Utilisateur::trouverParEmail($email);
 
-        $utilisateurRepo = new Utilisateur('', '', '', '', '', '');
+    if ($userData) {
+     
+        if (password_verify($password, $userData['motpasse_hash'])) {
 
-        $utilisateur = $utilisateurRepo->trouverParEmail($email);
+            if ($userData['role'] === 'guide' && $userData['approuve'] !== 'approuvé') {
+                $erreur = "Votre compte guide n'est pas encore approuvé par l'admin.";
+            } 
+            else {
+                 
+                $_SESSION['user_id'] = $userData['id'];
+                $_SESSION['nom'] = $userData['nom'];
+                $_SESSION['role'] = $userData['role'];
 
-        if (!$utilisateur) {
-            $erreur = "Email introuvable.";
-        }
-        elseif (!$utilisateur->verifierMotDePasse($motPasse)) {
-            $erreur = "Mot de passe incorrect.";
-        }
-        elseif ($utilisateur->getapprouve() !== 'approuvé') {
-            $erreur = "Votre compte n'est pas encore approuvé.";
-        }
-        else {
-
-            $_SESSION['user'] = [
-                'email' => $utilisateur->getEmail(),
-                'role'  => $utilisateur->getRole()
-            ];
-
-           
-            if ($utilisateur->getRole() === 'admin') {
-                header('Location: dashboard_admin.php');
-            } elseif ($utilisateur->getRole() === 'guide') {
-                header('Location: dashboard_guide.php');
-            } else {
-                header('Location: dashboard_visiteur.php');
+                
+                if ($userData['role'] === 'admin') {
+                    header("Location: dashboard_admin.php");
+                } elseif ($userData['role'] === 'guide') {
+                    header("Location: dashboard_guide.php");
+                } else {
+                    header("Location: dashboard_visiteur.php");
+                }
+                exit();
             }
-
-            exit;
+        } else {
+            $erreur = "Email ou mot de passe incorrect.";
         }
+    } else {
+        $erreur = "Email ou mot de passe incorrect."; 
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion</title>
-
-    <!-- Tailwind CDN -->
+    <title>Connexion - Zoo ASSAD</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-sm">
+        <h2 class="text-2xl font-bold mb-6 text-center text-green-700">Connexion</h2>
+        
+        <?php if ($erreur): ?>
+            <div class="bg-red-100 text-red-700 p-2 mb-4 text-sm rounded"><?= $erreur ?></div>
+        <?php endif; ?>
 
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-            Connexion
-        </h2>
-        <?php if (!empty($erreur)): ?>
-    <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
-        <?= htmlspecialchars($erreur) ?>
-    </div>
-<?php endif; ?>
-
-        <form action="connexion.php" method="POST" class="space-y-5">
-
-            <!-- Email -->
+        <form method="POST" class="space-y-4">
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                </label>
-                <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    placeholder="exemple@email.com"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
+                <label class="block text-sm font-medium">Email</label>
+                <input type="email" name="email" class="w-full border rounded p-2 focus:ring-green-500" required>
             </div>
-
-            <!-- Mot de passe -->
             <div>
-                <label for="mot_passe" class="block text-sm font-medium text-gray-700 mb-1">
-                    Mot de passe
-                </label>
-                <input
-                    type="password"
-                    name="mot_passe"
-                    id="mot_passe"
-                    
-                    placeholder="Votre mot de passe"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
+                <label class="block text-sm font-medium">Mot de passe</label>
+                <input type="password" name="password" class="w-full border rounded p-2 focus:ring-green-500" required>
             </div>
-
-            <!-- Bouton -->
-            <button
-                type="submit"
-                class="w-full bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition"
-            >
-                Se connecter
-            </button>
-
+            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Se connecter</button>
         </form>
-
     </div>
-
 </body>
 </html>
