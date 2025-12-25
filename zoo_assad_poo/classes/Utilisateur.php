@@ -80,7 +80,7 @@ class Utilisateur extends Database {
     public function creer() {
         $sql = "INSERT INTO utilisateurs
                 (nom, email, role, motpasse_hash, etat, approuve)
-                VALUES (:nom, :email, :role, :mot_de_passe, :etat, :approuve)";
+                VALUES (:nom, :email, :role, :motpasse_hash, :etat, :approuve)";
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -88,7 +88,7 @@ class Utilisateur extends Database {
             ':nom' => $this->nom,
             ':email' => $this->email,
             ':role' => $this->role,
-            ':mot_de_passe' => $this->motPasseHash,
+            ':motpasse_hash' => $this->motPasseHash,
             ':etat' => $this->etat,
             ':approuve' => $this->approuve
         ]);
@@ -108,7 +108,7 @@ class Utilisateur extends Database {
     $data['nom'],
     $data['email'],
     $data['role'],
-    $data['mot_de_passe'], 
+    $data['motpasse_hash'], 
     $data['etat'],
     $data['approuve']
 );
