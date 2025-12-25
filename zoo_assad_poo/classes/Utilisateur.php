@@ -116,8 +116,11 @@ class Utilisateur extends Database {
 
        
 
-    public function verifierMotDePasse($motDePasseSaisi, $hashStocke) {
-        return password_verify($motDePasseSaisi, $hashStocke);
-    }
+    
+    public function verifierMotDePasse(string $motDePasseSaisi): bool
+{
+    return password_verify($motDePasseSaisi, $this->motPasseHash);
+}
+
 }
 ?>
