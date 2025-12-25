@@ -105,13 +105,14 @@ class Utilisateur extends Database {
     }
 
     return new Utilisateur(
-        $data['nom'],
-        $data['email'],
-        $data['role'],
-        null, 
-        $data['etat'],
-        $data['approuve']
-    );
+    $data['nom'],
+    $data['email'],
+    $data['role'],
+    $data['mot_de_passe'], 
+    $data['etat'],
+    $data['approuve']
+);
+
 }
 
        
