@@ -17,7 +17,7 @@ class Utilisateur extends Database {
         $this->nom = $nom;
         $this->email = $email;
         $this->role = $role;
-        $this->motPasseHash = password_hash($motPasse, PASSWORD_DEFAULT);
+        $this->motPasseHash = $motPasse;
         $this->etat = $etat;
         $this->approuve = $approuve;
     }
