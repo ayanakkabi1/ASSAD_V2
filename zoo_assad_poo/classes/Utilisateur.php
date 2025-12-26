@@ -8,18 +8,16 @@ class Utilisateur extends Database {
     private $email;
     private $role;
     private $motPasseHash;
-    private $etat;
-    private $approuve;
+  
 
-    public function __construct($nom, $email, $role, $motPasse, $etat, $approuve) {
+    public function __construct($nom, $email, $role, $motPasse) {
         parent::__construct(); 
 
         $this->nom = $nom;
         $this->email = $email;
         $this->role = $role;
-        $this->motPasseHash = $motPasse;
-        $this->etat = $etat;
-        $this->approuve = $approuve;
+        $this->motPasseHash = password_hash($motPasse, PASSWORD_DEFAULT);
+        
     }
 
     /* ===== GETTERS ===== */
@@ -43,13 +41,7 @@ class Utilisateur extends Database {
         return $this->motPasseHash;
     }
 
-    public function getEtat() {
-        return $this->etat;
-    }
-
-    public function getApprouve() {
-        return $this->approuve;
-    }
+   
 
     /* ===== SETTERS ===== */
     public function setNom($nom) {
@@ -68,18 +60,12 @@ class Utilisateur extends Database {
         $this->motPasseHash = password_hash($motPasse, PASSWORD_DEFAULT);
     }
 
-    public function setEtat($etat) {
-        $this->etat = $etat;
-    }
-
-    public function setApprouve($approuve) {
-        $this->approuve = $approuve;
-    }
+    
 
     
     public function creer() {
         $sql = "INSERT INTO utilisateurs
-                (nom, email, role, motpasse_hash, etat, approuve)
+                (nom, email, role, motpasse_hash)
                 VALUES (:nom, :email, :role, :motpasse_hash, :etat, :approuve)";
 
         $stmt = $this->pdo->prepare($sql);
@@ -89,8 +75,7 @@ class Utilisateur extends Database {
             ':email' => $this->email,
             ':role' => $this->role,
             ':motpasse_hash' => $this->motPasseHash,
-            ':etat' => $this->etat,
-            ':approuve' => $this->approuve
+            
         ]);
     }
 
@@ -109,8 +94,7 @@ class Utilisateur extends Database {
     $data['email'],
     $data['role'],
     $data['motpasse_hash'], 
-    $data['etat'],
-    $data['approuve']
+   
 );
 
 }

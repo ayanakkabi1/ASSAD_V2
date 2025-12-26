@@ -3,6 +3,7 @@ session_start();
 
 require_once 'classes/Utilisateur.php';
 
+
 $erreur = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,15 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$utilisateur) {
             $erreur = "Email introuvable.";
         }
-        elseif (!$utilisateur->verifierMotDePasse($motPasse,$hashStocke)) {
+        elseif (!$utilisateur->verifierMotDePasse($motPasse)) {
             $erreur = "Mot de passe incorrect.";
         }
-        elseif ($utilisateur->getApprouve() !== 'approuvé') {
+        elseif ($utilisateur->getapprouve() !== 'approuvé') {
             $erreur = "Votre compte n'est pas encore approuvé.";
         }
         else {
 
-            
             $_SESSION['user'] = [
                 'email' => $utilisateur->getEmail(),
                 'role'  => $utilisateur->getRole()
@@ -67,14 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
             Connexion
         </h2>
-       
         <?php if (!empty($erreur)): ?>
     <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
         <?= htmlspecialchars($erreur) ?>
     </div>
 <?php endif; ?>
 
-        <form action="" method="POST" class="space-y-5">
+        <form action="connexion.php" method="POST" class="space-y-5">
 
             <!-- Email -->
             <div>

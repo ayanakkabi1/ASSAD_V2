@@ -1,7 +1,6 @@
 <?php
 require_once 'classes/Utilisateur.php';
 
-
 $erreurs = [];
 $nom = $email = $role = '';
 
@@ -20,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($email)) {
-        $erreurs['email'] = "L'email est obligatoire.";
+        $erreurs['email'] = "L’email est obligatoire.";
     }
 
     if (empty($password)) {
@@ -33,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
    
     if (!empty($email) && !preg_match('/^[^\s@]+@[^\s@]+\.[^\s@]+$/', $email)) {
-        $erreurs['email'] = "veulliez entrez un email valide";
+        $erreurs['email'] = "Format de l’email invalide.";
     }
 
   
@@ -60,15 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email,
             $role,
             $motPasseHash,
-            $etat,
+            'actif',
             $approuve
         );
 
         
         $utilisateur->creer();
 
-        
-        header("Location: connexion.php");
+        // Redirection
+        header('Location: login.php');
         exit;
     }
 }
@@ -87,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <h2 class="text-2xl font-bold text-center mb-6">Inscription</h2>
 
-    <form method="post" action="">
+    <form method="post">
 
         <!-- Nom -->
         <label>Nom</label>
@@ -107,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Mot de passe -->
         <label>Mot de passe</label>
-        <input  name="password" class="w-full border p-3 mb-1">
+        <input type="password" name="password" class="w-full border p-3 mb-1">
         <?php if (isset($erreurs['password'])): ?>
             <p class="text-red-500 text-sm mb-3"><?= $erreurs['password'] ?></p>
         <?php endif; ?>
