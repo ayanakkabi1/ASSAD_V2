@@ -4,23 +4,27 @@ class Habitat
 {
     private ?int $id_hab;
     private string $hab_name;
+    private string $typeclimat;
     private string $description;
     private string $zonezoo;
+    
 
     private PDO $pdo;
 
     public function __construct(
         PDO $pdo,
-        ?int $id_hab = null,
         string $hab_name = '',
+        string $typeclimat='',
         string $description = '',
         string $zonezoo = ''
+        
     ) {
         $this->pdo = $pdo;
-        $this->id_hab = $id_hab;
         $this->hab_name = $hab_name;
+        $this->typeclimat=$typeclimat;
         $this->description = $description;
         $this->zonezoo = $zonezoo;
+        
     }
 
     // ===== Getters =====
@@ -45,13 +49,49 @@ class Habitat
         return $this->zonezoo;
     }
 
+    public function creer(): bool
+{
+    
+    $sql = "INSERT INTO habitats (nom, typeclimat, description, zonezoo) VALUES (?, ?, ?, ?)";
+    $stmt = $this->pdo->prepare($sql);
+    
+    $success = $stmt->execute([
+        $this->hab_name, 
+        $this->typeclimat, 
+        $this->description, 
+        $this->zonezoo
+    ]);
 
+    if ($success) {
+        $this->id_hab = (int)$this->pdo->lastInsertId();
+    }
+
+    return $success;
+}
+public function creerhab(): bool
+{
+    $sql = "INSERT INTO habitats (nom, typeclimat, pdescription, zonezoo) VALUES (?, ?, ?, ?)";
+    $stmt = $this->pdo->prepare($sql);
+    
+    $success = $stmt->execute([
+        $this->hab_name,
+        $this->typeclimat, 
+        $this->description, 
+        $this->zonezoo
+    ]);
+
+    if ($success) {
+        $this->id_hab = (int)$this->pdo->lastInsertId();
+    }
+
+    return $success;
+}
     public function listerTous(): array
     {
         $sql = "
-            SELECT id_hab, hab_name, description, zonezoo
+            SELECT id, nom,typeclimat, pdescription, zonezoo
             FROM habitats
-            ORDER BY hab_name
+            ORDER BY nom
         ";
 
         $stmt = $this->pdo->query($sql);
@@ -61,9 +101,10 @@ class Habitat
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $habitats[] = new Habitat(
                 $this->pdo,
-                (int)$row['id_hab'],
-                $row['hab_name'],
-                $row['description'],
+                (int)$row['id'],
+                $row['nom'],
+                $row['typeclimat'],
+                $row['pdescription'],
                 $row['zonezoo']
             );
         }
